@@ -1,0 +1,10 @@
+security:
+  jwt:
+    secret-key: secretash8uihjsadasokjdjbnhafdbugjaodsikfioahndsuijfhdaskoiojhdsuijahb
+    expire-length: 3600000
+spring:
+  data:
+    mongodb:
+      database: ibbnj_church
+      host: localhost
+      port: 27017
