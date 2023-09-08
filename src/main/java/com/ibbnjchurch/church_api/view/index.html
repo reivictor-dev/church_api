@@ -1,0 +1,47 @@
+<html>
+<head>
+    <title>Consumir Endpoint</title>
+</head>
+<body>
+    <h1>Consumir Endpoint</h1>
+    
+    <button onclick="criarPost()">Criar Post</button>
+
+    <script>
+        function criarPost() {
+            // Dados do post em formato JSON
+            var postData = {
+                "post": {
+                    "titulo": "Título do Post",
+                    "text": "Texto do Post"
+                }
+            };
+
+            // Converte os dados para JSON
+            var jsonBody = JSON.stringify(postData);
+
+            // URL do endpoint REST
+            var url = "http://localhost:8080/api/post/createPost";
+
+            // Configuração da requisição
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", url, true);
+            xhr.setRequestHeader("Content-Type", "application/json", );
+            xhr.setRequestHeader("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0ZVAzIiwiaWF0IjoxNjk0MTI5OTA4LCJleHAiOjE2OTQxMzM1MDh9.ysngVM0Us-SlSXVW8bMKXQriA1M41shEEqvWaCTivKc")
+            // Define a função de callback para tratar a resposta
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        alert("Post criado com sucesso!");
+                    } else {
+                        alert("Erro ao criar o post. Status: " + xhr.status);
+                    }
+                }
+            };
+
+            // Envia a requisição com o corpo JSON
+            xhr.send(jsonBody);
+        }
+    </script>
+</body>
+</html>

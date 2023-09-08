@@ -2,9 +2,16 @@ security:
   jwt:
     secret-key: secretash8uihjsadasokjdjbnhafdbugjaodsikfioahndsuijfhdaskoiojhdsuijahb
     expire-length: 3600000
+file:
+  uploadDir: D:\files_testing_path_storage
 spring:
   data:
     mongodb:
       database: ibbnj_church
       host: localhost
       port: 27017
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 256MB
+      max-request-size: 256MB  
