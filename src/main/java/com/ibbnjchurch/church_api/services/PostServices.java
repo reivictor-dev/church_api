@@ -3,6 +3,7 @@ package com.ibbnjchurch.church_api.services;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,9 +51,19 @@ public class PostServices {
                     fileEntity.setFilePath(saveFile);
                     fileStorageRepository.save(fileEntity);
                     fileEntities.add(fileEntity);
+
+                    if (file.getSize() == 0 && file.getOriginalFilename() == "") {
+                        for (Files oneFile : fileEntities) {
+                            fileStorageRepository.delete(oneFile);
+                            fileStorageService.deleteFile(saveFile);
+                            oneFile.setFilePath(null);
+                            oneFile.setId(null);
+                        }
+                    }
                 }
                 post.setFiles(fileEntities);
             }
+
             post.setTitulo(title);
             post.setText(text);
             post.setUser(user);
@@ -68,17 +79,17 @@ public class PostServices {
         var post = postRepository.findById(id).orElse(null);
 
         if (post != null) {
-            if (!post.getFiles().isEmpty()) {
+            List<Files> nonEmptyFiles = post.getFiles().stream()
+                    .filter(file -> file != null && file.getFilePath() != null)
+                    .collect(Collectors.toList());
 
+            for (Files file : nonEmptyFiles) {
                 try {
-                    for (Files file : post.getFiles()) {
-                        fileStorageRepository.delete(file);
-                        fileStorageService.deleteFile(file.getFilePath());
-                    }
+                    fileStorageService.deleteFile(file.getFilePath());
+                    fileStorageRepository.delete(file);
                 } catch (Exception e) {
                     throw new Exception("Error deleting file: ", e.getCause());
                 }
-
             }
         }
 

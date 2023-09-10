@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,10 +21,6 @@ import com.ibbnjchurch.church_api.model.User;
 import com.ibbnjchurch.church_api.services.PostServices;
 import com.ibbnjchurch.church_api.services.UserDetailsServiceImpl;
 import com.ibbnjchurch.church_api.services.files.FileStorageService;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping(value = "/api/post")
@@ -44,8 +43,15 @@ public class PostController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = serviceImpl.getAuthenticatedUser(authentication);
 
+        for (MultipartFile file : files) {
+            if (!isValidImageType(file)) {
+                return ResponseEntity.badRequest()
+                        .body("File type not supported! For images make sure that are: JPG, JPEG, PNG;\n" + //
+                                "For videos: MP4, MKV");
+            }
+        }
         services.createPost(title, text, user, files);
-        return ResponseEntity.ok("Post criado com sucesso!");
+        return ResponseEntity.ok("Post successfully created!");
     }
 
     @GetMapping(value = "/posts")
@@ -64,5 +70,13 @@ public class PostController {
     public ResponseEntity<?> deletePost(@PathVariable String id) throws Exception {
         services.deletePost(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean isValidImageType(MultipartFile file) {
+        String contentType = file.getContentType();
+        System.out.println(contentType);
+        return contentType != null && (contentType.equals("image/png") || contentType.equals("image/jpeg")
+                || contentType.equals("image/jpg") || contentType.equals("video/mp4")
+                || contentType.equals("video/x-matroska") || contentType.equals("video/webm"));
     }
 }

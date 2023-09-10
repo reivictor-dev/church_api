@@ -46,7 +46,7 @@ public class FileStorageService {
                 extension = filenameOriginal.substring(lastIndex);
             }
         }
-        String newFileName = "IBBNJ_Image" + timestamp + extension;
+        String newFileName = "IBBNJ_File_" + timestamp + extension;
 
         return StringUtils.cleanPath(newFileName);
 
