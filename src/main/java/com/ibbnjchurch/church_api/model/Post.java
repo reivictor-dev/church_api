@@ -17,7 +17,7 @@ public class Post {
     private String id;
 
     @NotBlank
-    private String titulo;
+    private String title;
 
     @NotBlank
     private String text;
@@ -37,14 +37,6 @@ public class Post {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
     }
 
     public String getText() {
@@ -77,6 +69,14 @@ public class Post {
 
     public void setFiles(List<Files> files) {
         this.files = files;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
 }

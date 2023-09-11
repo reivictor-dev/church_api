@@ -64,7 +64,7 @@ public class PostServices {
                 post.setFiles(fileEntities);
             }
 
-            post.setTitulo(title);
+            post.setTitle(title);
             post.setText(text);
             post.setUser(user);
             post.setCreatedAt(date);
@@ -73,6 +73,40 @@ public class PostServices {
         } catch (Exception e) {
             throw new Exception("Failed on authenticated user!", e);
         }
+    }
+
+    public Post updatePost(String id, String title, String text, List<MultipartFile> files) throws Exception {
+        var postFoundedById = postRepository.findById(id).orElse(null);
+
+        var newEditedDate = new Date();
+
+        postFoundedById.setTitle(title);
+        postFoundedById.setText(text);
+        if (files != null && !files.isEmpty()) {
+            List<Files> fileEntities = new ArrayList<>();
+
+            for (MultipartFile file : files) {
+                String saveFile = fileStorageService.storeFile(file);
+                Files fileEntity = new Files();
+                fileEntity.setFilePath(saveFile);
+                fileStorageRepository.save(fileEntity);
+                fileEntities.add(fileEntity);
+
+                if (file.getSize() == 0 && file.getOriginalFilename() == "") {
+                    for (Files oneFile : fileEntities) {
+                        fileStorageRepository.delete(oneFile);
+                        fileStorageService.deleteFile(saveFile);
+                        oneFile.setFilePath(null);
+                        oneFile.setId(null);
+                    }
+                }
+            }
+            postFoundedById.setFiles(fileEntities);
+        }
+        postFoundedById.setCreatedAt(newEditedDate);
+
+        return postRepository.save(postFoundedById);
+
     }
 
     public void deletePost(String id) throws Exception {
