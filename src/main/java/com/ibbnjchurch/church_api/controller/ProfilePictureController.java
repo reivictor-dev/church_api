@@ -20,8 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ibbnjchurch.church_api.model.files.ProfilePicture;
 import com.ibbnjchurch.church_api.security.jwt.JwtUtils;
-import com.ibbnjchurch.church_api.services.UserDetailsImpl;
 import com.ibbnjchurch.church_api.services.files.ProfilePictureService;
+import com.ibbnjchurch.church_api.services.user.UserDetailsImpl;
 
 @RestController
 @RequestMapping("/api")

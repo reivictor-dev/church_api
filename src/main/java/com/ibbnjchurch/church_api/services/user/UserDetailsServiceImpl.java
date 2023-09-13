@@ -1,4 +1,4 @@
-package com.ibbnjchurch.church_api.services;
+package com.ibbnjchurch.church_api.services.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;

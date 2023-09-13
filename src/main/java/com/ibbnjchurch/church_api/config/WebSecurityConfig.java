@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.ibbnjchurch.church_api.security.jwt.AuthEntryPointJwt;
 import com.ibbnjchurch.church_api.security.jwt.AuthTokenFilter;
-import com.ibbnjchurch.church_api.services.UserDetailsServiceImpl;
+import com.ibbnjchurch.church_api.services.user.UserDetailsServiceImpl;
 
 @Configuration
 @EnableMethodSecurity

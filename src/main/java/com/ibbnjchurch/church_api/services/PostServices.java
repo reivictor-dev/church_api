@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ibbnjchurch.church_api.model.Post;
-import com.ibbnjchurch.church_api.model.User;
 import com.ibbnjchurch.church_api.model.files.Files;
 import com.ibbnjchurch.church_api.repository.PostRepository;
 import com.ibbnjchurch.church_api.repository.files.FileStorageRepository;
+import com.ibbnjchurch.church_api.security.jwt.JwtUtils;
 import com.ibbnjchurch.church_api.services.files.FileStorageService;
 
 @Service
@@ -28,7 +28,11 @@ public class PostServices {
     @Autowired
     FileStorageRepository fileStorageRepository;
 
+    @Autowired
+    JwtUtils jwtUtils;
+
     public List<Post> findAll() {
+        System.out.println(jwtUtils.authenticatedUser());
         return postRepository.findAll();
     }
 
@@ -37,11 +41,11 @@ public class PostServices {
                 .orElse(null);
     }
 
-    public Post createPost(String title, String text, User user, List<MultipartFile> files) throws Exception {
+    public Post createPost(String title, String text, List<MultipartFile> files) throws Exception {
         try {
             Post post = new Post();
-
             Date date = new Date();
+
             if (files != null && !files.isEmpty()) {
                 List<Files> fileEntities = new ArrayList<>();
 
@@ -66,7 +70,7 @@ public class PostServices {
 
             post.setTitle(title);
             post.setText(text);
-            post.setUser(user);
+            post.setUser(jwtUtils.authenticatedUser());
             post.setCreatedAt(date);
             return postRepository.save(post);
 
@@ -77,7 +81,11 @@ public class PostServices {
 
     public Post updatePost(String id, String title, String text, List<MultipartFile> files) throws Exception {
         var postFoundedById = postRepository.findById(id).orElse(null);
+        var postUserId = postFoundedById.getUser().getId();
 
+        if (!postUserId.equals(jwtUtils.authenticatedUser().getId())) {
+            throw new Exception("Error to update post, verify your credentials!");
+        }
         var newEditedDate = new Date();
 
         postFoundedById.setTitle(title);
@@ -111,6 +119,11 @@ public class PostServices {
 
     public void deletePost(String id) throws Exception {
         var post = postRepository.findById(id).orElse(null);
+        var postUserId = post.getUser().getId();
+
+        if (!postUserId.equals(jwtUtils.authenticatedUser().getId())) {
+            throw new Exception("Error to delete post, verify your credentials!");
+        }
 
         if (post != null) {
             List<Files> nonEmptyFiles = post.getFiles().stream()
@@ -129,4 +142,5 @@ public class PostServices {
 
         postRepository.delete(post);
     }
+
 }

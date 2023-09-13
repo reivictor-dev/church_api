@@ -12,6 +12,7 @@ import com.ibbnjchurch.church_api.model.User;
 import com.ibbnjchurch.church_api.model.files.ProfilePicture;
 import com.ibbnjchurch.church_api.repository.UserRepository;
 import com.ibbnjchurch.church_api.repository.files.ProfilePictureRepository;
+import com.ibbnjchurch.church_api.security.jwt.JwtUtils;
 
 @Service
 public class ProfilePictureService {
@@ -21,6 +22,9 @@ public class ProfilePictureService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    JwtUtils jwtUtils;
 
     public String addDefaultPicture(MultipartFile file) throws IOException {
         ProfilePicture picture = new ProfilePicture();
@@ -57,22 +61,22 @@ public class ProfilePictureService {
         User user = userRepository.findById(userId)
                 .orElseThrow(null);
 
-        if (user != null) {
-            byte[] imageBytes = file.getBytes();
-
-            Binary imageBinary = new Binary(imageBytes);
-
-            ProfilePicture profilePicture = new ProfilePicture(title);
-            profilePicture.setImage(imageBinary);
-            repository.save(profilePicture);
-            user.setProfilePicture(profilePicture);
-
-            userRepository.save(user);
-
-            return profilePicture.getId();
-        } else {
-            throw new Exception("Error: Verify...");
+        if (!user.getId().equals(jwtUtils.authenticatedUser().getId())) {
+            throw new Exception("Error to set the profile picture, verify your credentials!");
         }
+
+        byte[] imageBytes = file.getBytes();
+
+        Binary imageBinary = new Binary(imageBytes);
+
+        ProfilePicture profilePicture = new ProfilePicture(title);
+        profilePicture.setImage(imageBinary);
+        repository.save(profilePicture);
+        user.setProfilePicture(profilePicture);
+
+        userRepository.save(user);
+
+        return profilePicture.getId();
 
     }
 }

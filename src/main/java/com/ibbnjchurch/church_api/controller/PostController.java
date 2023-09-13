@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,10 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ibbnjchurch.church_api.model.Post;
-import com.ibbnjchurch.church_api.model.User;
 import com.ibbnjchurch.church_api.services.PostServices;
-import com.ibbnjchurch.church_api.services.UserDetailsServiceImpl;
 import com.ibbnjchurch.church_api.services.files.FileStorageService;
+import com.ibbnjchurch.church_api.services.user.UserDetailsServiceImpl;
 
 @RestController
 @RequestMapping(value = "/api/post")
@@ -41,9 +38,6 @@ public class PostController {
             @RequestParam String title,
             @RequestParam String text,
             @RequestPart List<MultipartFile> files) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = serviceImpl.getAuthenticatedUser(authentication);
-
         for (MultipartFile file : files) {
             if (!isValidImageType(file) && !file.isEmpty()) {
                 return ResponseEntity.badRequest()
@@ -51,7 +45,7 @@ public class PostController {
                                 "For videos: MP4, MKV");
             }
         }
-        var createdPost = services.createPost(title, text, user, files);
+        var createdPost = services.createPost(title, text, files);
         return ResponseEntity.ok(createdPost);
     }
 

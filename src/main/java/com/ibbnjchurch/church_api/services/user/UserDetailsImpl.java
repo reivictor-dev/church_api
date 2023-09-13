@@ -1,4 +1,4 @@
-package com.ibbnjchurch.church_api.services;
+package com.ibbnjchurch.church_api.services.user;
 
 import java.util.Collection;
 import java.util.List;
