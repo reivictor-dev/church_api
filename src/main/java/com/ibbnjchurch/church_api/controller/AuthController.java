@@ -1,8 +1,6 @@
 package com.ibbnjchurch.church_api.controller;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,16 +10,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ibbnjchurch.church_api.model.ERole;
-import com.ibbnjchurch.church_api.model.Role;
-import com.ibbnjchurch.church_api.model.User;
-import com.ibbnjchurch.church_api.model.files.ProfilePicture;
 import com.ibbnjchurch.church_api.payload.request.LoginRequest;
 import com.ibbnjchurch.church_api.payload.request.SignupRequest;
 import com.ibbnjchurch.church_api.payload.response.JwtResponse;
@@ -31,84 +24,72 @@ import com.ibbnjchurch.church_api.repository.UserRepository;
 import com.ibbnjchurch.church_api.repository.files.ProfilePictureRepository;
 import com.ibbnjchurch.church_api.security.jwt.JwtUtils;
 import com.ibbnjchurch.church_api.services.user.UserDetailsImpl;
+import com.ibbnjchurch.church_api.services.user.UserServices;
 
 import jakarta.validation.Valid;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+        @Autowired
+        AuthenticationManager authenticationManager;
 
-    @Autowired
-    UserRepository userRepository;
+        @Autowired
+        UserRepository userRepository;
 
-    @Autowired
-    RoleRepository roleRepository;
+        @Autowired
+        UserServices userServices;
 
-    @Autowired
-    ProfilePictureRepository profilePictureRepository;
+        @Autowired
+        RoleRepository roleRepository;
 
-    @Autowired
-    PasswordEncoder encoder;
+        @Autowired
+        ProfilePictureRepository profilePictureRepository;
 
-    @Autowired
-    JwtUtils jwtUtils;
+        @Autowired
+        PasswordEncoder encoder;
 
-    @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest LoginRequest) {
+        @Autowired
+        JwtUtils jwtUtils;
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(LoginRequest.getUsername(), LoginRequest.getPassword()));
+        @PostMapping("/signin")
+        public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest LoginRequest) {
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(LoginRequest.getUsername(),
+                                                LoginRequest.getPassword()));
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities()
-                .stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                String jwt = jwtUtils.generateJwtToken(authentication);
 
-        return ResponseEntity.ok(
-                new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles));
-    }
+                UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+                List<String> roles = userDetails.getAuthorities()
+                                .stream()
+                                .map(item -> item.getAuthority())
+                                .collect(Collectors.toList());
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
-        if (userRepository.existsByUsername(signupRequest.getUsername())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Username is already taken!"));
+                return ResponseEntity.ok(
+                                new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(),
+                                                userDetails.getEmail(), roles));
         }
 
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already use!"));
+        @PostMapping("/signup")
+        public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
+                if (userRepository.existsByUsername(signupRequest.getUsername())) {
+                        return ResponseEntity
+                                        .badRequest()
+                                        .body(new MessageResponse("Error: Username is already taken!"));
+                }
+
+                if (userRepository.existsByEmail(signupRequest.getEmail())) {
+                        return ResponseEntity
+                                        .badRequest()
+                                        .body(new MessageResponse("Error: Email is already use!"));
+                }
+
+                userServices.createUserAndAuthenticate(signupRequest);
+
+                return ResponseEntity.ok(new MessageResponse("User registered succesfully!"));
         }
-
-        User user = new User(signupRequest.getUsername(),
-                signupRequest.getEmail(),
-                encoder.encode(signupRequest.getPassword()), null, null);
-
-        Set<String> newRoles = signupRequest.getRoles();
-        Set<Role> roles = new HashSet<>();
-
-        if (newRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(userRole);
-        }
-
-        ProfilePicture defaulPicture = profilePictureRepository.findByTitle("profile_picture");
-
-        user.setProfilePicture(defaulPicture);
-        user.setRoles(roles);
-        userRepository.save(user);
-
-        return ResponseEntity.ok(new MessageResponse("User registered succesfully!"));
-    }
 }

@@ -8,12 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import com.ibbnjchurch.church_api.model.User;
 import com.ibbnjchurch.church_api.services.user.UserDetailsImpl;
-import com.ibbnjchurch.church_api.services.user.UserDetailsServiceImpl;
+import com.ibbnjchurch.church_api.services.user.UserServices;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -28,7 +26,7 @@ public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
     @Autowired
-    UserDetailsServiceImpl serviceImpl;
+    UserServices userServices;
 
     @Value("${security.jwt.secret-key:secret}")
     private String jwtSecret;
@@ -81,11 +79,5 @@ public class JwtUtils {
 
         }
         return false;
-    }
-
-    public User authenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = serviceImpl.getAuthenticatedUser(authentication);
-        return user;
     }
 }

@@ -12,7 +12,7 @@ import com.ibbnjchurch.church_api.model.User;
 import com.ibbnjchurch.church_api.model.files.ProfilePicture;
 import com.ibbnjchurch.church_api.repository.UserRepository;
 import com.ibbnjchurch.church_api.repository.files.ProfilePictureRepository;
-import com.ibbnjchurch.church_api.security.jwt.JwtUtils;
+import com.ibbnjchurch.church_api.services.user.UserServices;
 
 @Service
 public class ProfilePictureService {
@@ -24,7 +24,7 @@ public class ProfilePictureService {
     UserRepository userRepository;
 
     @Autowired
-    JwtUtils jwtUtils;
+    UserServices userServices;
 
     public String addDefaultPicture(MultipartFile file) throws IOException {
         ProfilePicture picture = new ProfilePicture();
@@ -61,7 +61,7 @@ public class ProfilePictureService {
         User user = userRepository.findById(userId)
                 .orElseThrow(null);
 
-        if (!user.getId().equals(jwtUtils.authenticatedUser().getId())) {
+        if (!user.getId().equals(userServices.getAuthenticatedUser().getId())) {
             throw new Exception("Error to set the profile picture, verify your credentials!");
         }
 

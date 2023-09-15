@@ -1,7 +1,6 @@
 package com.ibbnjchurch.church_api.services.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,16 +23,4 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return UserDetailsImpl.build(user);
     }
 
-    public User getAuthenticatedUser(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("Not authenticated user!");
-        }
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        String username = userDetails.getUsername();
-        User user = repository.findByUsername(username)
-                .orElse(null);
-        return user;
-
-    }
 }

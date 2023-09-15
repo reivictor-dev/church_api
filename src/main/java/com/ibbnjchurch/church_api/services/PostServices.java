@@ -13,8 +13,8 @@ import com.ibbnjchurch.church_api.model.Post;
 import com.ibbnjchurch.church_api.model.files.Files;
 import com.ibbnjchurch.church_api.repository.PostRepository;
 import com.ibbnjchurch.church_api.repository.files.FileStorageRepository;
-import com.ibbnjchurch.church_api.security.jwt.JwtUtils;
 import com.ibbnjchurch.church_api.services.files.FileStorageService;
+import com.ibbnjchurch.church_api.services.user.UserServices;
 
 @Service
 public class PostServices {
@@ -29,10 +29,10 @@ public class PostServices {
     FileStorageRepository fileStorageRepository;
 
     @Autowired
-    JwtUtils jwtUtils;
+    UserServices userServices;
 
     public List<Post> findAll() {
-        System.out.println(jwtUtils.authenticatedUser());
+        System.out.println(userServices.getAuthenticatedUser());
         return postRepository.findAll();
     }
 
@@ -70,7 +70,7 @@ public class PostServices {
 
             post.setTitle(title);
             post.setText(text);
-            post.setUser(jwtUtils.authenticatedUser());
+            post.setUser(userServices.getAuthenticatedUser());
             post.setCreatedAt(date);
             return postRepository.save(post);
 
@@ -83,7 +83,7 @@ public class PostServices {
         var postFoundedById = postRepository.findById(id).orElse(null);
         var postUserId = postFoundedById.getUser().getId();
 
-        if (!postUserId.equals(jwtUtils.authenticatedUser().getId())) {
+        if (!postUserId.equals(userServices.getAuthenticatedUser().getId())) {
             throw new Exception("Error to update post, verify your credentials!");
         }
         var newEditedDate = new Date();
@@ -121,7 +121,7 @@ public class PostServices {
         var post = postRepository.findById(id).orElse(null);
         var postUserId = post.getUser().getId();
 
-        if (!postUserId.equals(jwtUtils.authenticatedUser().getId())) {
+        if (!postUserId.equals(userServices.getAuthenticatedUser().getId())) {
             throw new Exception("Error to delete post, verify your credentials!");
         }
 
